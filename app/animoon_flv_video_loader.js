@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name     animoon.moe play list converter
 // @version  1
+// @match    http://animoon.moe/bbs/board.php*
 // @grant    GM.xmlHttpRequest
 // @require  http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/lib/jquery.min.js
 // @require  http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js
