@@ -14,10 +14,10 @@ Firefox 86.0.1에서 작동을 확인하였습니다.
 
 3. Greasemonkey로 새 user script 생성
 
-![](images/step2.png)
+   ![](images/step2.png)
 
 4. 2의 소스코드 복사 붙여넣기하기.
 
-![](images/step4.png)
+   ![](images/step4.png)
 
 5. enjoy
