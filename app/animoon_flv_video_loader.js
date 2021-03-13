@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     animoon.moe play list converter
-// @version  1
+// @version  1.01
 // @match    http://animoon.moe/bbs/board.php*
 // @grant    GM.xmlHttpRequest
 // @require  http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/lib/jquery.min.js
@@ -14,7 +14,8 @@ window.setTimeout(
 
     function createPlayer(xml) {
       const list = [];
-      xml.querySelectorAll("track")
+      if (xml instanceof XMLDocument)
+        xml.querySelectorAll("track")
         .forEach(function (track) {
           list.push({
             title: track.querySelector("title").textContent,
@@ -25,6 +26,14 @@ window.setTimeout(
             poster: track.querySelector("image").textContent
           });
         });
+      else
+        list.push({
+          title: document.querySelector("#mw_basic .mw_basic_view_subject > h1").innerText,
+          artist: document.querySelector("#mw_basic .mw_basic_view_title .mw_basic_view_name > .member").innerText,
+          m4v: xml.location,
+          poster: xml.poster,
+        });
+      console.log(list);
 
       const div = document.createElement("div");
       div.setAttribute("id", "jp_container_1");
@@ -98,16 +107,18 @@ window.setTimeout(
     }
 
     function loadList(url) {
-      GM.xmlHttpRequest({
-        method: "GET",
-        url: url,
-        onload: function (xhr) {
-          createPlayer(xhr.responseXML);
-        },
-        onerror: function (e) {
-          console.error(e);
-        }
-      })
+      if (typeof url === "string")
+        GM.xmlHttpRequest({
+          method: "GET",
+          url: url,
+          onload: function (xhr) {
+            createPlayer(xhr.responseXML);
+          },
+          onerror: function (e) {
+            console.error(e);
+          }
+        });
+      else createPlayer(url);
     }
 
     (function () {
@@ -115,10 +126,17 @@ window.setTimeout(
       if (oldPlayer) {
         args = {};
         oldPlayer.attributes.flashvars.value.split('&').forEach(function (item) {
-          let pair = item.split('=');
-          args[pair[0]] = pair[1];
+          if (item.length) {
+            let pair = item.split('=');
+            if (pair.length === 2)
+              args[pair[0].trim()] = pair[1].trim();
+          }
         });
-        const url = args.playlistfile;
+        const url = args.playlistfile || {
+          location: args.file,
+          image: args.image,
+        };
+        console.log(args);
 
         if (null === document.querySelector('script[src="http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js"]')) {
           let e = document.createElement("style");
