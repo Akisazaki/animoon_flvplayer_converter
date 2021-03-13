@@ -33,7 +33,6 @@ window.setTimeout(
           m4v: xml.location,
           poster: xml.poster,
         });
-      console.log(list);
 
       const div = document.createElement("div");
       div.setAttribute("id", "jp_container_1");
@@ -136,7 +135,6 @@ window.setTimeout(
           location: args.file,
           image: args.image,
         };
-        console.log(args);
 
         if (null === document.querySelector('script[src="http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js"]')) {
           let e = document.createElement("style");
