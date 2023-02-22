@@ -621,6 +621,32 @@ const createPlayer = (function () {
       div.setAttribute("aria-label", "media player");
       div.innerHTML = `
       <div class="jp-type-playlist">
+        <div id="jp-display-controls">
+          <fieldset>
+            <button type="button" act="saturate.increase" title="Increase saturate">+</button>
+            <div>
+              <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M253.72 202.53a4 4 0 004.56 0 151.88 151.88 0 01128.44-20.41 4 4 0 005.15-4C388.8 105.86 329 48 256 48s-132.8 57.86-135.87 130.15a4 4 0 005.15 4 151.88 151.88 0 01128.44 20.41zm151.59 10.03a152.53 152.53 0 01-83.08 108.23 4 4 0 00-2.28 3.69c0 1.17.05 2.34.05 3.52a151.58 151.58 0 01-47.15 109.94 4 4 0 00.64 6.31A135.24 135.24 0 00344 464c72.07 0 134.1-60.28 136-132.34a136.07 136.07 0 00-68.76-121.87 4 4 0 00-5.93 2.77z"></path><path d="M390.57 203.67a4 4 0 00-2.69-4.4 135.84 135.84 0 00-114.4 12.49 4 4 0 00-.64 6.29 151.92 151.92 0 0144.47 81.4 4 4 0 005.94 2.72 136.29 136.29 0 0067.32-98.5zM192 328c0-1.18 0-2.35.05-3.52a4 4 0 00-2.28-3.69 152.53 152.53 0 01-83.08-108.23 4 4 0 00-5.88-2.77 136.07 136.07 0 00-68.76 121.87C34 403.72 96 464 168.05 464a135.24 135.24 0 0070.46-19.75 4 4 0 00.64-6.31A151.58 151.58 0 01192 328z"></path><path d="M168 192a135.34 135.34 0 00-43.88 7.27 4 4 0 00-2.69 4.4 136.29 136.29 0 0067.32 98.5 4 4 0 005.94-2.72 151.92 151.92 0 0144.47-81.4 4 4 0 00-.64-6.29A135.18 135.18 0 00168 192zm88 144a151.44 151.44 0 01-42.72-6.12 4 4 0 00-5.15 4 135.69 135.69 0 0045.18 95.4 4 4 0 005.38 0 135.69 135.69 0 0045.18-95.4 4 4 0 00-5.15-4A151.44 151.44 0 01256 336zm46.57-27.67a135.94 135.94 0 00-43.87-81.58 4.06 4.06 0 00-5.4 0 135.94 135.94 0 00-43.87 81.58 4 4 0 002.69 4.4 136.06 136.06 0 0087.76 0 4 4 0 002.69-4.4z"></path></svg>
+              <span act="saturate.display">1.0</span>
+            </div>
+            <button type="button" act="saturate.decrease" title="Decrease saturate">-</button>
+          </fieldset>
+          <fieldset>
+            <button type="button" act="contrast.increase" title="Increase contrast">+</button>
+            <div>
+              <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm127.3 335.3c-34 34-79.2 52.7-127.3 52.7V76c48.1 0 93.3 18.7 127.3 52.7S436 207.9 436 256s-18.7 93.3-52.7 127.3z"></path></svg>
+              <span act="contrast.display">1.0</span>
+            </div>
+            <button type="button" act="contrast.decrease" title="Decrease contrast">-</button>
+          </fieldset>
+          <fieldset>
+            <button type="button" act="brightness.increase" title="Increase brightness">+</button>
+            <div>
+              <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><g id="Brightness_Up" dataName="Brightness Up"><g><path d="M12,17.5A5.5,5.5,0,1,1,17.5,12,5.506,5.506,0,0,1,12,17.5Zm0-10A4.5,4.5,0,1,0,16.5,12,4.505,4.505,0,0,0,12,7.5Z"></path><circle cx="12" cy="3.063" r="1"></circle><circle cx="12" cy="20.937" r="1"></circle><circle cx="20.937" cy="12" r="1"></circle><circle cx="3.063" cy="12" r="1"></circle><circle cx="18.319" cy="5.681" r="1"></circle><circle cx="5.681" cy="18.319" r="1"></circle><circle cx="18.319" cy="18.319" r="1"></circle><circle cx="5.681" cy="5.681" r="1"></circle></g></g></svg>
+              <span act="brightness.display">1.0</span>
+            </div>
+            <button type="button" act="brightness.decrease" title="Decrease brightness">-</button>
+          </fieldset>
+        </div>
         <div id="jquery_jplayer_1" class="jp-jplayer"></div>
         <div class="jp-gui">
           <div class="jp-video-play">
@@ -640,32 +666,6 @@ const createPlayer = (function () {
                 <button class="jp-play" role="button" tabindex="1">play</button>
                 <button class="jp-next" role="button" tabindex="2">next</button>
                 <button class="jp-stop" role="button" tabindex="3">stop</button>
-              </div>
-              <div id="jp-display-controls">
-                <fieldset>
-                  <button type="button" act="saturate.increase" title="Increase saturate">+</button>
-                  <div>
-                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M253.72 202.53a4 4 0 004.56 0 151.88 151.88 0 01128.44-20.41 4 4 0 005.15-4C388.8 105.86 329 48 256 48s-132.8 57.86-135.87 130.15a4 4 0 005.15 4 151.88 151.88 0 01128.44 20.41zm151.59 10.03a152.53 152.53 0 01-83.08 108.23 4 4 0 00-2.28 3.69c0 1.17.05 2.34.05 3.52a151.58 151.58 0 01-47.15 109.94 4 4 0 00.64 6.31A135.24 135.24 0 00344 464c72.07 0 134.1-60.28 136-132.34a136.07 136.07 0 00-68.76-121.87 4 4 0 00-5.93 2.77z"></path><path d="M390.57 203.67a4 4 0 00-2.69-4.4 135.84 135.84 0 00-114.4 12.49 4 4 0 00-.64 6.29 151.92 151.92 0 0144.47 81.4 4 4 0 005.94 2.72 136.29 136.29 0 0067.32-98.5zM192 328c0-1.18 0-2.35.05-3.52a4 4 0 00-2.28-3.69 152.53 152.53 0 01-83.08-108.23 4 4 0 00-5.88-2.77 136.07 136.07 0 00-68.76 121.87C34 403.72 96 464 168.05 464a135.24 135.24 0 0070.46-19.75 4 4 0 00.64-6.31A151.58 151.58 0 01192 328z"></path><path d="M168 192a135.34 135.34 0 00-43.88 7.27 4 4 0 00-2.69 4.4 136.29 136.29 0 0067.32 98.5 4 4 0 005.94-2.72 151.92 151.92 0 0144.47-81.4 4 4 0 00-.64-6.29A135.18 135.18 0 00168 192zm88 144a151.44 151.44 0 01-42.72-6.12 4 4 0 00-5.15 4 135.69 135.69 0 0045.18 95.4 4 4 0 005.38 0 135.69 135.69 0 0045.18-95.4 4 4 0 00-5.15-4A151.44 151.44 0 01256 336zm46.57-27.67a135.94 135.94 0 00-43.87-81.58 4.06 4.06 0 00-5.4 0 135.94 135.94 0 00-43.87 81.58 4 4 0 002.69 4.4 136.06 136.06 0 0087.76 0 4 4 0 002.69-4.4z"></path></svg>
-                    <span act="saturate.display">1.0</span>
-                  </div>
-                  <button type="button" act="saturate.decrease" title="Decrease saturate">-</button>
-                </fieldset>
-                <fieldset>
-                  <button type="button" act="contrast.increase" title="Increase contrast">+</button>
-                  <div>
-                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm127.3 335.3c-34 34-79.2 52.7-127.3 52.7V76c48.1 0 93.3 18.7 127.3 52.7S436 207.9 436 256s-18.7 93.3-52.7 127.3z"></path></svg>
-                    <span act="contrast.display">1.0</span>
-                  </div>
-                  <button type="button" act="contrast.decrease" title="Decrease contrast">-</button>
-                </fieldset>
-                <fieldset>
-                  <button type="button" act="brightness.increase" title="Increase brightness">+</button>
-                  <div>
-                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><g id="Brightness_Up" dataName="Brightness Up"><g><path d="M12,17.5A5.5,5.5,0,1,1,17.5,12,5.506,5.506,0,0,1,12,17.5Zm0-10A4.5,4.5,0,1,0,16.5,12,4.505,4.505,0,0,0,12,7.5Z"></path><circle cx="12" cy="3.063" r="1"></circle><circle cx="12" cy="20.937" r="1"></circle><circle cx="20.937" cy="12" r="1"></circle><circle cx="3.063" cy="12" r="1"></circle><circle cx="18.319" cy="5.681" r="1"></circle><circle cx="5.681" cy="18.319" r="1"></circle><circle cx="18.319" cy="18.319" r="1"></circle><circle cx="5.681" cy="5.681" r="1"></circle></g></g></svg>
-                    <span act="brightness.display">1.0</span>
-                  </div>
-                  <button type="button" act="brightness.decrease" title="Decrease brightness">-</button>
-                </fieldset>
               </div>
               <div class="jp-volume-controls">
                 <button class="jp-mute" role="button" tabindex="4">mute</button>
@@ -795,13 +795,28 @@ window.setTimeout(
 
           styled `
             #jp_container_1 {
+              position: relative;
               width: auto !important;
               min-width: 888px;
             }
             #jp-display-controls {
+              position: absolute;
+              padding: 5px;
+              left: 5px;
+              top: 5px;
+              border-radius: 5px;
+              background-color: rgba(0,0,0,0.8);
+              color: rgba(255,255,255,0.78);
               display: flex;
               align-items: center;
               gap: 10px;
+              z-index: +1;
+              transition: opacity 90ms linear;
+              opacity: 0.001;
+            }
+            #jp-display-controls:hover {
+              transition: opacity 190ms linear;
+              opacity: 1.0;
             }
             #jp-display-controls > fieldset {
               display: flex;
@@ -832,10 +847,14 @@ window.setTimeout(
               outline: none;
               border: 0 none;
               border-radius: 5px;
-            }
-            #jp-display-controls > fieldset > button:hover {
               background-color: #1e1e1e;
               color: white;
+              opacity: 0.3;
+            }
+            #jp-display-controls > fieldset > button:hover {
+              background-color: rgba(255,255,255,0.78);
+              color: black;
+              opacity: 1.0;
             }
             .item {
               margin:0 0 10px 0;
