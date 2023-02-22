@@ -19,35 +19,56 @@ let homeUrl;
 // playlist loader
 function loadList(url) {
   if (typeof url === "string")
-    GM.xmlHttpRequest({
-      method: "GET",
-      url: url,
-      onload: function (xhr) {
-        if (xhr.responseXML)
-          createPlayer(xhr.responseXML, url);
-        else window.alert("플레이 리스트를 불러왔으나 잘못된 데이터인거 같습니다. XML문법을 체크해주세요.");
-      },
-      onerror: function (e) {
-        console.error(e);
-        window.alert(`플레이 리스트를 불러오지 못 하였습니다: ${e}`);
+    fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw response.status;
       }
+      return response.text();
+    })
+    .then(xmlText => new DOMParser().parseFromString(xmlText, "text/xml"))
+    .then(list => createPlayer(list, url))
+    .catch(error => {
+      if (typeof error === "number") alert(`플레이 리스트를 불러오지 못 하였습니다: ${error}`);
+      else alert("플레이 리스트를 불러왔으나 잘못된 데이터인거 같습니다. XML문법을 체크해주세요.");
     });
   else
     createPlayer(url);
 }
 
-const css = (raw, ...substitutions) => String.raw({
-    raw
-  }, substitutions)
-  .replace(/\s{0,}(;|:|{|})\s{0,}/g, (_, s) => s)
-  .replace(/\s+(\S+):\s{0,}(\S*.+);/g, (_, name, value) => `${name}:${value};`)
-  .replace(/\s{2,}/g, ' ');
+function styled(raw, ...substitutions) {
+  const style = document.createElement("style");
+  style.setAttribute("type", "text/css");
+  style.innerText = String.raw({
+      raw
+    }, substitutions)
+    .replace(/\s+(\S+):\s{0,}(\S*.+);/g, (_, name, value) => `${name}:${value};`)
+    .replace(/\s{0,}(;|:|{|})\s{0,}/g, (_, s) => s)
+    .replace(/;}/g, "}")
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  if (document.head) {
+    document.head.appendChild(style);
+
+  } else {
+    const onReady = e => {
+      if (document.head) {
+        document.head.appendChild(style);
+        document.removeEventListener("readystatechange", onReady);
+      }
+    };
+
+    document.addEventListener("readystatechange", onReady);
+  }
+
+  return style;
+}
 
 // from jPlayerPlaylist
 // original: https://github.com/jplayer/jPlayer/blob/master/src/javascript/add-on/jplayer.playlist.js
-(function ($, undefined) {
-
-  MyPlaylist = function (cssSelector, playlist, options) {
+const MyPlaylist = (function ($, undefined) {
+  function MyPlaylist(cssSelector, playlist, options) {
     var self = this;
 
     this.current = 0;
@@ -538,6 +559,7 @@ const css = (raw, ...substitutions) => String.raw({
       }
     }
   };
+  return MyPlaylist;
 })(jQuery);
 
 
@@ -598,57 +620,126 @@ const createPlayer = (function () {
       div.setAttribute("role", "application");
       div.setAttribute("aria-label", "media player");
       div.innerHTML = `
-<div class="jp-type-playlist">
-<div id="jquery_jplayer_1" class="jp-jplayer"></div>
-<div class="jp-gui">
-  <div class="jp-video-play">
-    <button class="jp-video-play-icon" role="button" tabindex="0">play</button>
-  </div>
-  <div class="jp-interface">
-    <div class="jp-progress">
-      <div class="jp-seek-bar">
-        <div class="jp-play-bar"></div>
-      </div>
-    </div>
-    <div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
-    <div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
-    <div class="jp-controls-holder">
-      <div class="jp-controls">
-        <button class="jp-previous" role="button" tabindex="0">previous</button>
-        <button class="jp-play" role="button" tabindex="0">play</button>
-        <button class="jp-next" role="button" tabindex="0">next</button>
-        <button class="jp-stop" role="button" tabindex="0">stop</button>
-      </div>
-      <div class="jp-volume-controls">
-        <button class="jp-mute" role="button" tabindex="0">mute</button>
-        <button class="jp-volume-max" role="button" tabindex="0">max volume</button>
-        <div class="jp-volume-bar">
-          <div class="jp-volume-bar-value"></div>
+      <div class="jp-type-playlist">
+        <div id="jquery_jplayer_1" class="jp-jplayer"></div>
+        <div class="jp-gui">
+          <div class="jp-video-play">
+            <button class="jp-video-play-icon" role="button" tabindex="0">play</button>
+          </div>
+          <div class="jp-interface">
+            <div class="jp-progress">
+              <div class="jp-seek-bar">
+                <div class="jp-play-bar"></div>
+              </div>
+            </div>
+            <div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
+            <div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
+            <div class="jp-controls-holder">
+              <div class="jp-controls">
+                <button class="jp-previous" role="button" tabindex="0">previous</button>
+                <button class="jp-play" role="button" tabindex="1">play</button>
+                <button class="jp-next" role="button" tabindex="2">next</button>
+                <button class="jp-stop" role="button" tabindex="3">stop</button>
+              </div>
+              <div id="jp-display-controls">
+                <fieldset>
+                  <button type="button" act="saturate.increase" title="Increase saturate">+</button>
+                  <div>
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M253.72 202.53a4 4 0 004.56 0 151.88 151.88 0 01128.44-20.41 4 4 0 005.15-4C388.8 105.86 329 48 256 48s-132.8 57.86-135.87 130.15a4 4 0 005.15 4 151.88 151.88 0 01128.44 20.41zm151.59 10.03a152.53 152.53 0 01-83.08 108.23 4 4 0 00-2.28 3.69c0 1.17.05 2.34.05 3.52a151.58 151.58 0 01-47.15 109.94 4 4 0 00.64 6.31A135.24 135.24 0 00344 464c72.07 0 134.1-60.28 136-132.34a136.07 136.07 0 00-68.76-121.87 4 4 0 00-5.93 2.77z"></path><path d="M390.57 203.67a4 4 0 00-2.69-4.4 135.84 135.84 0 00-114.4 12.49 4 4 0 00-.64 6.29 151.92 151.92 0 0144.47 81.4 4 4 0 005.94 2.72 136.29 136.29 0 0067.32-98.5zM192 328c0-1.18 0-2.35.05-3.52a4 4 0 00-2.28-3.69 152.53 152.53 0 01-83.08-108.23 4 4 0 00-5.88-2.77 136.07 136.07 0 00-68.76 121.87C34 403.72 96 464 168.05 464a135.24 135.24 0 0070.46-19.75 4 4 0 00.64-6.31A151.58 151.58 0 01192 328z"></path><path d="M168 192a135.34 135.34 0 00-43.88 7.27 4 4 0 00-2.69 4.4 136.29 136.29 0 0067.32 98.5 4 4 0 005.94-2.72 151.92 151.92 0 0144.47-81.4 4 4 0 00-.64-6.29A135.18 135.18 0 00168 192zm88 144a151.44 151.44 0 01-42.72-6.12 4 4 0 00-5.15 4 135.69 135.69 0 0045.18 95.4 4 4 0 005.38 0 135.69 135.69 0 0045.18-95.4 4 4 0 00-5.15-4A151.44 151.44 0 01256 336zm46.57-27.67a135.94 135.94 0 00-43.87-81.58 4.06 4.06 0 00-5.4 0 135.94 135.94 0 00-43.87 81.58 4 4 0 002.69 4.4 136.06 136.06 0 0087.76 0 4 4 0 002.69-4.4z"></path></svg>
+                    <span act="saturate.display">1.0</span>
+                  </div>
+                  <button type="button" act="saturate.decrease" title="Decrease saturate">-</button>
+                </fieldset>
+                <fieldset>
+                  <button type="button" act="contrast.increase" title="Increase contrast">+</button>
+                  <div>
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm127.3 335.3c-34 34-79.2 52.7-127.3 52.7V76c48.1 0 93.3 18.7 127.3 52.7S436 207.9 436 256s-18.7 93.3-52.7 127.3z"></path></svg>
+                    <span act="contrast.display">1.0</span>
+                  </div>
+                  <button type="button" act="contrast.decrease" title="Decrease contrast">-</button>
+                </fieldset>
+                <fieldset>
+                  <button type="button" act="brightness.increase" title="Increase brightness">+</button>
+                  <div>
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><g id="Brightness_Up" dataName="Brightness Up"><g><path d="M12,17.5A5.5,5.5,0,1,1,17.5,12,5.506,5.506,0,0,1,12,17.5Zm0-10A4.5,4.5,0,1,0,16.5,12,4.505,4.505,0,0,0,12,7.5Z"></path><circle cx="12" cy="3.063" r="1"></circle><circle cx="12" cy="20.937" r="1"></circle><circle cx="20.937" cy="12" r="1"></circle><circle cx="3.063" cy="12" r="1"></circle><circle cx="18.319" cy="5.681" r="1"></circle><circle cx="5.681" cy="18.319" r="1"></circle><circle cx="18.319" cy="18.319" r="1"></circle><circle cx="5.681" cy="5.681" r="1"></circle></g></g></svg>
+                    <span act="brightness.display">1.0</span>
+                  </div>
+                  <button type="button" act="brightness.decrease" title="Decrease brightness">-</button>
+                </fieldset>
+              </div>
+              <div class="jp-volume-controls">
+                <button class="jp-mute" role="button" tabindex="4">mute</button>
+                <button class="jp-volume-max" role="button" tabindex="5">max volume</button>
+                <div class="jp-volume-bar">
+                  <div class="jp-volume-bar-value"></div>
+                </div>
+              </div>
+              <div class="jp-toggles">
+                <button class="jp-repeat" role="button" tabindex="6" title="Repeat">repeat</button>
+                <button class="jp-shuffle" role="button" tabindex="7" title="Shuffle">shuffle</button>
+                <button class="jp-full-screen" role="button" tabindex="8" title="Full screen">full screen</button>
+              </div>
+            </div>
+            <div class="jp-details">
+              <div class="jp-title" aria-label="title">&nbsp;</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="jp-toggles">
-        <button class="jp-repeat" role="button" tabindex="0">repeat</button>
-        <button class="jp-shuffle" role="button" tabindex="0">shuffle</button>
-        <button class="jp-full-screen" role="button" tabindex="0">full screen</button>
-      </div>
-    </div>
-    <div class="jp-details">
-      <div class="jp-title" aria-label="title">&nbsp;</div>
-    </div>
-  </div>
-</div>
-<div class="jp-playlist">
-  <ul>
-    <!-- The method Playlist.displayPlaylist() uses this unordered list -->
-    <li>&nbsp;</li>
-  </ul>
-</div>
-<div class="jp-no-solution">
-  <span>Update Required</span>
-  To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
-</div>
-</div>`;
+        <div class="jp-playlist">
+          <ul>
+            <!-- The method Playlist.displayPlaylist() uses this unordered list -->
+            <li>&nbsp;</li>
+          </ul>
+        </div>
+        <div class="jp-no-solution">
+          <span>Update Required</span>
+          To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+        </div>
+      </div>`;
+      const filter = {
+        saturate: 1.0,
+        contrast: 1.0,
+        brightness: 1.0
+      };
+      const range = {
+        saturate: {
+          max: 3,
+          min: 0,
+          step: 0.1,
+        },
+        contrast: {
+          max: 3,
+          min: 0.1,
+          step: 0.1,
+        },
+        brightness: {
+          max: 2,
+          min: 0.1,
+          step: 0.1
+        }
+      };
       document.querySelector('#view_content').appendChild(div);
+      document.querySelectorAll("button[act]").forEach(button => {
+        button.addEventListener("click", e => {
+          const [target, act] = e.currentTarget.getAttribute("act").split(".");
+          console.log({
+            target,
+            act
+          })
+          const {
+            max,
+            min,
+            step
+          } = range[target];
+          filter[target] = act === "increase" ?
+            Math.min(max, filter[target] + step) :
+            Math.max(min, filter[target] - step);
+          document.querySelector(`[act='${target}.display']`).textContent = filter[target].toFixed(1);
+          document.getElementById("jquery_jplayer_1")
+            .style.setProperty("filter", Object.keys(filter).map(name => `${name}(${filter[name]})`).join(' '));
+        })
+      });
+
       player = new MyPlaylist({
         jPlayer: "#jquery_jplayer_1",
         cssSelectorAncestor: "#jp_container_1"
@@ -691,25 +782,89 @@ window.setTimeout(
 
         // if new player not found
         if (null === document.querySelector(`script[src="${J_PLAYER_SCRIPT_URL}"]`)) {
-          let e = document.createElement("style");
-          e.setAttribute("type", "text/css");
-          e.innerText = ".item { margin:0 0 10px 0; }";
-          document.head.appendChild(e);
+          const link = document.createElement("link");
+          link.setAttribute("href", J_PLAYER_STYLESHEET_URL);
+          link.setAttribute("rel", "stylesheet");
+          link.setAttribute("type", "text/css");
+          link.addEventListener("load", () => {
+            window.setTimeout(function () {
+              loadList(url)
+            }, 100);
+          });
+          document.head.appendChild(link);
 
-          e = document.createElement("link");
-          e.setAttribute("href", J_PLAYER_STYLESHEET_URL);
-          e.setAttribute("rel", "stylesheet");
-          e.setAttribute("type", "text/css");
-          document.head.appendChild(e);
-
-          e = document.createElement("style");
-          e.setAttribute("type", "text/css");
-          e.innerText = css`
+          styled `
+            #jp_container_1 {
+              width: auto !important;
+              min-width: 888px;
+            }
+            #jp-display-controls {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+            #jp-display-controls > fieldset {
+              display: flex;
+              flex-direction: row-reverse;
+              align-items: center;
+              gap: 10px;
+              padding: 0;
+              margin: 0;
+              border: none 0px;
+            }
+            #jp-display-controls > fieldset > div {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            #jp-display-controls > fieldset > div > span {
+              font-size: 8px;
+              font-weight: 200;
+              opacity: 0.67;
+            }
+            #jp-display-controls > fieldset > button {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 20px;
+              height: 20px;
+              appearance: none;
+              outline: none;
+              border: 0 none;
+              border-radius: 5px;
+            }
+            #jp-display-controls > fieldset > button:hover {
+              background-color: #1e1e1e;
+              color: white;
+            }
+            .item {
+              margin:0 0 10px 0;
+            }
+            div.jp-type-playlist div.jp-playlist ul {
+              padding: 0;
+            }
+            div.jp-type-playlist div.jp-playlist li:not(.jp-playlist-current):hover {
+              background-color: #1e1e1e;
+            }
+            div.jp-type-playlist div.jp-playlist li:not(.jp-playlist-current):hover a {
+              color: white !important;
+            }
             div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
               list-style-type: none;
-              padding-left: inherit;
-              position: relative;
-              box-shadow: inset 0 0 15px rgba(0,0,0,0.33);
+              padding: 5px 0 4px 20px;
+              background-color: rgba(0,24,46,0.15);
+              cursor: default !important;
+            }
+            div.jp-type-playlist div.jp-playlist li a {
+              text-decoration: none !important;
+            }
+            div.jp-type-playlist div.jp-playlist li.jp-playlist-current .poster-thumbnail {
+              filter: saturate(2) contrast(2);
+              box-shadow: 0 0 2px rgba(0,0,0,0.367);
+            }
+            .jp-artist {
+              color: inherit !important;
+              opacity: 0.5;
             }
             .jp-playlist-item {
               display: flex;
@@ -718,12 +873,7 @@ window.setTimeout(
               gap: 10px;
             }
           `;
-          document.head.appendChild(e);
-          e.onload = function () {
-            window.setTimeout(function () {
-              loadList(url)
-            }, 100);
-          };
+
         } else loadList(url);
         oldPlayer.remove();
       }
