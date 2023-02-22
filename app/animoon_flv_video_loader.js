@@ -9,6 +9,11 @@
 // ==/UserScript==
 
 const DEBUG = false;
+const OLD_PLAYER_SELECTOR = "[src*='/jwplayer/player.swf']"; // "[src='http://luxlunae.ipdisk.co.kr:80/publist/VOL1/share/jwplayer/player.swf']";
+const SWF_PATH = "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer";
+const J_PLAYER_SCRIPT_URL = "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js";
+const J_PLAYER_STYLESHEET_URL = "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/skin/blue.monday/css/jplayer.blue.monday.css"
+
 let homeUrl;
 
 // playlist loader
@@ -30,6 +35,13 @@ function loadList(url) {
   else
     createPlayer(url);
 }
+
+const css = (raw, ...substitutions) => String.raw({
+    raw
+  }, substitutions)
+  .replace(/\s{0,}(;|:|{|})\s{0,}/g, (_, s) => s)
+  .replace(/\s+(\S+):\s{0,}(\S*.+);/g, (_, name, value) => `${name}:${value};`)
+  .replace(/\s{2,}/g, ' ');
 
 // from jPlayerPlaylist
 // original: https://github.com/jplayer/jPlayer/blob/master/src/javascript/add-on/jplayer.playlist.js
@@ -288,7 +300,8 @@ function loadList(url) {
       }
 
       // The title is given next in the HTML otherwise the float:right on the free media corrupts in IE6/7
-      listItem += `<a href="javascript:;" class="${this.options.playlistOptions.itemClass}" tabindex="0">${media.poster ? `<img width="64px" class="poster-thumbnail" alt="" src="${media.poster}" />` : ""}${media.title}${media.artist ? `<span style="flex:1"></span><span class="jp-artist">by ${media.artist}</span>` : ""}</a>`;      listItem += "</div></li>";
+      listItem += `<a href="javascript:;" class="${this.options.playlistOptions.itemClass}" tabindex="0">${media.poster ? `<img width="64px" class="poster-thumbnail" alt="" src="${media.poster}" />` : ""}${media.title}${media.artist ? `<span style="flex:1"></span><span class="jp-artist">by ${media.artist}</span>` : ""}</a>`;
+      listItem += "</div></li>";
 
       return listItem;
     },
@@ -640,7 +653,7 @@ const createPlayer = (function () {
         jPlayer: "#jquery_jplayer_1",
         cssSelectorAncestor: "#jp_container_1"
       }, list, {
-        swfPath: "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer",
+        swfPath: SWF_PATH,
         supplied: "webmv, ogv, m4v",
         useStateClassSkin: true,
         autoBlur: false,
@@ -660,7 +673,7 @@ window.setTimeout(
     let args;
 
     (function () {
-      const oldPlayer = document.querySelector('[src="http://luxlunae.ipdisk.co.kr:80/publist/VOL1/share/jwplayer/player.swf"]');
+      const oldPlayer = document.querySelector(OLD_PLAYER_SELECTOR);
       if (oldPlayer) {
         args = {};
         oldPlayer.attributes.flashvars.value.split('&').forEach(function (item) {
@@ -676,47 +689,36 @@ window.setTimeout(
         };
         homeUrl = args.playlistfile;
 
-        if (null === document.querySelector('script[src="http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js"]')) {
+        // if new player not found
+        if (null === document.querySelector(`script[src="${J_PLAYER_SCRIPT_URL}"]`)) {
           let e = document.createElement("style");
           e.setAttribute("type", "text/css");
           e.innerText = ".item { margin:0 0 10px 0; }";
           document.head.appendChild(e);
 
           e = document.createElement("link");
-          e.setAttribute("href", "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/skin/blue.monday/css/jplayer.blue.monday.css");
+          e.setAttribute("href", J_PLAYER_STYLESHEET_URL);
           e.setAttribute("rel", "stylesheet");
           e.setAttribute("type", "text/css");
           document.head.appendChild(e);
 
           e = document.createElement("style");
           e.setAttribute("type", "text/css");
-          e.innerText = `
-  div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
-    list-style-type: none;
-    padding-left: inherit;
-    position: relative;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.33);
-  }
-  .jp-playlist-item {
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    gap: 10px;
-  }
-`;
+          e.innerText = css`
+            div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
+              list-style-type: none;
+              padding-left: inherit;
+              position: relative;
+              box-shadow: inset 0 0 15px rgba(0,0,0,0.33);
+            }
+            .jp-playlist-item {
+              display: flex;
+              justify-content: start;
+              align-items: center;
+              gap: 10px;
+            }
+          `;
           document.head.appendChild(e);
-
-          // $('<script type="text/javascript" src="http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/lib/jquery.min.js"></script>').appendTo("head");
-          // e = document.createElement("script");
-          // e.setAttribute("src", "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/jplayer/jquery.jplayer.min.js");
-          // e.setAttribute("type", "text/javascript");
-          // document.head.appendChild(e);
-
-          // e = document.createElement("script");
-          // e.setAttribute("src", "http://luxlunae.ipdisk.co.kr/publist/VOL1/share/jPlayer-2.9.2/dist/add-on/jplayer.playlist.min.js");
-          // e.setAttribute("type", "text/javascript");
-          // document.head.appendChild(e);
-
           e.onload = function () {
             window.setTimeout(function () {
               loadList(url)
