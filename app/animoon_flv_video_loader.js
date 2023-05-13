@@ -26,6 +26,7 @@ function loadList(url) {
       }
       return response.text();
     })
+    .then(xmlText=> xmlText.replace(/\<\/playlist\>\s{0,}\<\/tracklist\>/g, "</tracklist></playlist>")) // 니세모노가타리 문법 오류 대응
     .then(xmlText => new DOMParser().parseFromString(xmlText, "text/xml"))
     .then(list => createPlayer(list, url))
     .catch(error => {
